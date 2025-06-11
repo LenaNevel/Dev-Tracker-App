@@ -1,0 +1,28 @@
+.homepage {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  padding: 2rem;
+}
+
+.links {
+  margin-top: 1.5rem;
+  display: flex;
+  gap: 1rem;
+}
+
+.links a {
+  padding: 0.75rem 1.5rem;
+  border: 1px solid #5c6ac4;
+  border-radius: 6px;
+  color: #5c6ac4;
+  transition: background-color 0.2s ease;
+}
+
+.links a:hover {
+  background-color: #5c6ac4;
+  color: white;
+}
