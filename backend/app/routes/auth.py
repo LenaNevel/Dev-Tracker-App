@@ -1,36 +1,60 @@
-from flask import Blueprint, request, jsonify
+from http import HTTPStatus
+from app.errors import APIError
+from flask import Blueprint, Response
+from flask.views import MethodView
+from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
 from app.models import User
 from app.extensions import db
-from flask_jwt_extended import create_access_token
-from app.schemas import UserRegisterSchema, UserOutSchema
-from sqlalchemy.exc import IntegrityError
-from pydantic import ValidationError
+from app.schemas import UserRegisterSchema, UserOutSchema, UserLoginSchema
+from app.utils import validate_input, to_json
 
+# 1️⃣ Define your Blueprint first
 auth_bp = Blueprint("auth", __name__, url_prefix="/auth")
 
-@auth_bp.route("/register", methods=["POST"])
-def register():
-    try:
-        data = UserRegisterSchema.model_validate(request.get_json())
-    except ValidationError as e:
-        return jsonify({"error": e.errors()}), 400
+class AuthAPI(MethodView):
+    @validate_input(UserRegisterSchema)
+    def post(self, data: UserRegisterSchema):
+        if User.query.filter_by(email=data.email).first():
+            raise APIError("Email already registered", status=HTTPStatus.CONFLICT)
 
-    if User.query.filter_by(email=data.email).first():
-        return jsonify({"error": "Email already registered"}), 400
+        user = User(username=data.username, email=data.email)
+        user.set_password(data.password)
+        user.save()
 
-    user = User(username=data.username, email=data.email)
-    user.set_password(data.password)
+        token = create_access_token(identity=user.id)
+        user_out = UserOutSchema.model_validate(user)
+        return to_json({"access_token": token, "user": user_out}, status=HTTPStatus.CREATED)
 
-    try:
-        db.session.add(user)
-        db.session.commit()
-    except IntegrityError:
-        db.session.rollback()
-        return jsonify({"error": "User could not be created"}), 500
+class AuthLoginAPI(MethodView):
+    @validate_input(UserLoginSchema)
+    def post(self, data: UserLoginSchema):
+        user = User.query.filter_by(email=data.email).first()
+        if not user or not user.check_password(data.password):
+            raise APIError("Invalid credentials", status=HTTPStatus.UNAUTHORIZED)
 
-    access_token = create_access_token(identity=user.id)
+        token = create_access_token(identity=user.id)
+        user_out = UserOutSchema.model_validate(user)
+        return to_json({"access_token": token, "user": user_out})
 
-    return jsonify({
-        "access_token": access_token,
-        "user": UserOutSchema.model_validate(user.to_dict()).model_dump()
-    }), 201
+class AuthMeAPI(MethodView):
+    @jwt_required()
+    def get(self) -> Response:
+        # Retrieve the user ID stored in the token
+        user_id: int = get_jwt_identity()
+        # Fetch user or 404
+        user = User.query.get_or_404(user_id)
+        # Serialize via Pydantic ORM mode
+        user_out = UserOutSchema.model_validate(user)
+        return to_json(user_out, status=HTTPStatus.OK)
+
+# Register the /me route
+me_view = AuthMeAPI.as_view("me_api")
+auth_bp.add_url_rule("/me", view_func=me_view, methods=["GET"])
+
+# register
+auth_view = AuthAPI.as_view("register_api")
+auth_bp.add_url_rule("/register", view_func=auth_view, methods=["POST"])
+
+# login
+login_view = AuthLoginAPI.as_view("login_api")
+auth_bp.add_url_rule("/login", view_func=login_view, methods=["POST"])
