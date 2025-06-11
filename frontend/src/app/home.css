@@ -1,28 +1,56 @@
+/* src/app/home.css */
+
 .homepage {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  justify-content: center;
   align-items: center;
+  justify-content: center;
   text-align: center;
-  padding: 2rem;
+  background-color: var(--color-neutral-50);
+  color: var(--color-neutral-800);
+}
+
+.homepage h1 {
+  font-size: 3rem;
+  font-weight: bold;
+  color: var(--color-primary); /* ← this must use the CSS variable */
+  margin-bottom: 1rem;
+}
+.homepage p {
+  font-size: 1.25rem;
+  max-width: 600px;
+  margin-bottom: 2rem;
 }
 
 .links {
-  margin-top: 1.5rem;
   display: flex;
   gap: 1rem;
 }
 
 .links a {
   padding: 0.75rem 1.5rem;
-  border: 1px solid #5c6ac4;
-  border-radius: 6px;
-  color: #5c6ac4;
-  transition: background-color 0.2s ease;
+  text-decoration: none;
+  border-radius: 5px;
+  font-weight: bold;
+  transition: background 0.2s ease-in-out;
 }
 
-.links a:hover {
-  background-color: #5c6ac4;
+.links a:first-child {
+  background-color: var(--color-primary);
+  color: white;
+}
+
+.links a:first-child:hover {
+  background-color: var(--color-primary-hover);
+}
+
+.links a:last-child {
+  border: 2px solid var(--color-accent);
+  color: var(--color-primary);
+}
+
+.links a:last-child:hover {
+  background-color: var(--color-accent);
   color: white;
 }

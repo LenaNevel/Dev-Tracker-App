@@ -1,8 +1,8 @@
-/* src/styles/main.css */
-
 :root {
-  --color-primary: #5C6AC4;
-  --color-accent: #14B8A6;
+  --color-primary: #14B8A6;   /* Teal */
+  --color-secondary: #F4F1DE; /* Creamy beige */
+  --color-accent: rgba(20, 184, 166, 0.5);    /* See trough teal 50% */
+  --color-primary-hover: #0d9488; /* Deep teal */
 
   --color-neutral-50:  #F9FAFB;
   --color-neutral-100: #F3F4F6;
@@ -14,12 +14,4 @@
   --color-neutral-700: #374151;
   --color-neutral-800: #1F2937;
   --color-neutral-900: #111827;
-}
-
-body {
-  margin: 0;
-  padding: 0;
-  font-family: sans-serif;
-  background-color: var(--color-neutral-50);
-  color: var(--color-neutral-800);
 }
