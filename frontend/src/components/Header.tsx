@@ -5,7 +5,9 @@ import Link from 'next/link';
 export default function Header() {
   return (
     <header className="header">
-      <h1 className="logo">Dev Tracker</h1>
+      <Link href="/" className="logo">
+        Dev Tracker
+      </Link>
       <Link href="/login" className="login-link">
         Log In
       </Link>

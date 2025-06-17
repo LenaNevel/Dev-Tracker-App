@@ -1,27 +1,22 @@
+// src/app/auth/page.tsx
 'use client';
-
-import Link from 'next/link';
-
-export default function RegisterPage() {
+export default function authPage() {
   return (
-    <main className="auth-page">
-      <h2 className="auth-title">Create Your Account</h2>
-      <form className="auth-form">
-        <label htmlFor="name">Name</label>
-        <input type="text" id="name" name="name" required />
+    <main className="page">
+      <div className="auth-card">
+        <h2 className="auth-title">Create your account</h2>
 
-        <label htmlFor="email">Email</label>
-        <input type="email" id="email" name="email" required />
+        <form className="auth-form">
+          <input type="text" name="username" placeholder="Username" required />
+          <input type="email" name="email" placeholder="Email address" required />
+          <input type="password" name="password" placeholder="Password" required />
+          <button type="submit" className="btn-primary">Create Account</button>
+        </form>
 
-        <label htmlFor="password">Password</label>
-        <input type="password" id="password" name="password" required />
-
-        <button type="submit" className="btn-primary">Sign Up</button>
-      </form>
-
-      <p className="auth-footer">
-        Already have an account? <Link href="/login">Log in</Link>
-      </p>
+        <p className="text-redirect">
+          Already have an account? <a href="/login">Log in</a>
+        </p>
+      </div>
     </main>
   );
 }
