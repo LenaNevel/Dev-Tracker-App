@@ -1,6 +1,7 @@
 # app/__init__.py
 
 from flask import Flask
+from flask_cors import CORS
 from .config import Config
 from .extensions import db, jwt, migrate
 from .routes.auth import auth_bp
@@ -8,6 +9,8 @@ from .errors import register_error_handlers
 
 def create_app():
     app = Flask(__name__)
+    CORS(app, origins=["http://localhost:3000"])
+
     app.config.from_object(Config)
 
     # Initialize extensions
