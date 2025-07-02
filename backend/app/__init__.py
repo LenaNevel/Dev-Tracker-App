@@ -9,7 +9,7 @@ from .errors import register_error_handlers
 
 def create_app():
     app = Flask(__name__)
-    CORS(app, origins=["http://localhost:3000"])
+    CORS(app, origins=["http://localhost:3000", "http://192.168.1.165:3000"])
 
     app.config.from_object(Config)
 

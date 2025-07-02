@@ -1,6 +1,4 @@
-'use client';
-
-import './dashboard.css';
+import TaskModal from "../../components/TaskModal";
 
 export default function DashboardPage() {
   return (
@@ -14,6 +12,7 @@ export default function DashboardPage() {
           <p className="dashboard-subtitle">Let’s build something great 🚀</p>
         </div>
       </div>
+      <TaskModal />
     </main>
   );
 }

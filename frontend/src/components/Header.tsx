@@ -3,9 +3,12 @@
 import Link from 'next/link';
 import { useAuth } from '../context/AuthContext';
 
+import { useTaskModal } from '../context/TaskModalContext';
+
 export default function Header() {
   const { isAuthenticated, logout } = useAuth();
-
+  const { openModal } = useTaskModal();
+  
   let actionButtons = (
     <Link href="/login" className="btn-primary">
       Log In
@@ -18,7 +21,7 @@ export default function Header() {
         <button onClick={logout} className="btn-secondary">
           Log Out
         </button>
-        <button className="btn-primary">
+        <button className="btn-primary" onClick={openModal}>
           <span className="emoji">🔧</span> Spin Up a Task
         </button>
       </div>
