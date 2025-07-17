@@ -1,17 +1,19 @@
 # backend/app/models.py
-
-from datetime import datetime
+from datetime import datetime, timezone
 from http import HTTPStatus
 from sqlalchemy.exc import IntegrityError
-
 from app.extensions import db
 from app.errors import APIError
 
 
+class TimestampMixin:
+    created_at = db.Column(db.DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
+    updated_at = db.Column(db.DateTime(timezone=True), onupdate=lambda: datetime.now(timezone.utc))
+
 class CRUDMixin:
     """
     Mixin that adds .save() and .delete() methods to a SQLAlchemy model,
-    handling session commits, rollbacks, and raising an APIError on failure.
+    with automatic error handling.
     """
     def save(self):
         try:
@@ -38,15 +40,13 @@ class CRUDMixin:
                 original=e
             )
 
-
-class User(CRUDMixin, db.Model):
+class User(TimestampMixin, CRUDMixin, db.Model):
     __tablename__ = 'user'
 
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(80), nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
     password_hash = db.Column(db.String(128), nullable=False)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     def set_password(self, password: str):
         from werkzeug.security import generate_password_hash
@@ -55,11 +55,3 @@ class User(CRUDMixin, db.Model):
     def check_password(self, password: str) -> bool:
         from werkzeug.security import check_password_hash
         return check_password_hash(self.password_hash, password)
-
-    def to_dict(self):
-        return {
-            "id": self.id,
-            "username": self.username,
-            "email": self.email,
-            "created_at": self.created_at.isoformat()
-        }
