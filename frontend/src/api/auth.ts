@@ -23,3 +23,12 @@ export function registerUser(data: {
     body: data,
   });
 }
+
+export function refreshToken(token: string): Promise<APIResponse> {
+  return apiRequest(`${AUTH_BASE}/refresh`, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+}

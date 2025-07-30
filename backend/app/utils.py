@@ -3,6 +3,7 @@ from datetime import datetime, date
 import json
 from functools import wraps
 from flask import request, Response
+from flask_jwt_extended import get_jwt_identity
 from pydantic import BaseModel
 from http import HTTPStatus
 
@@ -50,3 +51,10 @@ def validate_input(schema):
 
         return wrapper
     return decorator
+
+def get_current_user_id():
+    """
+    Get the current authenticated user's ID as an integer.
+    Requires @jwt_required() decorator to be applied to the calling function.
+    """
+    return int(get_jwt_identity())

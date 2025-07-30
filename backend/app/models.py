@@ -2,8 +2,17 @@
 from datetime import datetime, timezone
 from http import HTTPStatus
 from sqlalchemy.exc import IntegrityError
+import enum
 from app.extensions import db
 from app.errors import APIError
+
+
+class TaskStatus(enum.Enum):
+    BACKLOG = "backlog"
+    IN_PROGRESS = "in_progress" 
+    IN_REVIEW = "in_review"
+    DONE = "done"
+    WONT_DO = "wont_do"
 
 
 class TimestampMixin:
@@ -48,6 +57,9 @@ class User(TimestampMixin, CRUDMixin, db.Model):
     email = db.Column(db.String(120), unique=True, nullable=False)
     password_hash = db.Column(db.String(128), nullable=False)
 
+    # Relationship with tasks
+    tasks = db.relationship('Task', backref='user', lazy=True)
+
     def set_password(self, password: str):
         from werkzeug.security import generate_password_hash
         self.password_hash = generate_password_hash(password)
@@ -55,3 +67,17 @@ class User(TimestampMixin, CRUDMixin, db.Model):
     def check_password(self, password: str) -> bool:
         from werkzeug.security import check_password_hash
         return check_password_hash(self.password_hash, password)
+
+
+class Task(TimestampMixin, CRUDMixin, db.Model):
+    __tablename__ = 'task'
+
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(200), nullable=False)
+    why = db.Column(db.Text, nullable=True)
+    what = db.Column(db.Text, nullable=True)
+    how = db.Column(db.Text, nullable=True)
+    acceptance_criteria = db.Column(db.Text, nullable=True)
+    status = db.Column(db.Enum(TaskStatus), nullable=False, default=TaskStatus.BACKLOG)
+    is_deleted = db.Column(db.Boolean, nullable=False, default=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)

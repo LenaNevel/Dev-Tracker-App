@@ -15,6 +15,10 @@
   --color-neutral-800: #1F2937;
   --color-neutral-900: #111827;
 
+  --color-error: #FF6B35;        /* Orange-red error color */
+  --color-error-bg: #FFF4F1;     /* Light error background */
+  --color-error-border: #FFD4CC; /* Error border color */
+
   --box-shadow-color: rgba(0, 0, 0, 0.05); /* Light shadow for cards */
 }
 
@@ -34,8 +38,8 @@ html, body {
   flex: 1;
   display: flex;
   justify-content: center;
-  align-items: center;
-  padding: 2rem;
+  align-items: flex-start;
+  padding: 1rem 2rem;
   background-color: var(--color-neutral-50);
   color: var(--color-neutral-800);
 }
@@ -262,10 +266,13 @@ html, body {
 }
 
 .error-message {
-  color: darkorange;
+  background-color: var(--color-error-bg);
+  color: var(--color-error);
+  padding: 1rem;
+  border-radius: 8px;
+  border: 1px solid var(--color-error-border);
   font-size: 0.875rem;
-  margin-top: 0.5rem;
-  text-align: center;
+  margin-bottom: 1rem;
 }
 
 .header-actions {
