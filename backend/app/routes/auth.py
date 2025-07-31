@@ -1,52 +1,42 @@
 from http import HTTPStatus
-from app.errors import APIError
-from flask import Blueprint, Response
+from flask import Blueprint
 from flask.views import MethodView
-from flask_jwt_extended import create_access_token, jwt_required
-from app.models import User
-from app.extensions import db
-from app.schemas import UserRegisterSchema, UserOutSchema, UserLoginSchema
+from flask_jwt_extended import jwt_required
+from app.schemas import UserRegisterSchema, UserLoginSchema
+from app.services.auth_service import AuthService
 from app.utils import validate_input, to_json, get_current_user_id
 
 auth_bp = Blueprint("auth", __name__, url_prefix="/auth")
 
 class AuthAPI(MethodView):
+    """User registration endpoint"""
+    
     @validate_input(UserRegisterSchema)
     def post(self, data: UserRegisterSchema):
-        if User.query.filter_by(email=data.email).first():
-            raise APIError("Email already registered", status=HTTPStatus.CONFLICT)
-
-        user = User(username=data.username, email=data.email)
-        user.set_password(data.password)
-        user.save()
-
-        token = create_access_token(identity=str(user.id))
-        user_out = UserOutSchema.model_validate(user)
-        return to_json({"access_token": token, "user": user_out}, status=HTTPStatus.CREATED)
+        """Register a new user"""
+        token, user_out = AuthService.register_user(data)
+        return to_json(
+            {"access_token": token, "user": user_out}, 
+            status=HTTPStatus.CREATED
+        )
 
 class AuthLoginAPI(MethodView):
+    """User authentication endpoint"""
+    
     @validate_input(UserLoginSchema)
     def post(self, data: UserLoginSchema):
-        user = User.query.filter_by(email=data.email).first()
-        if not user or not user.check_password(data.password):
-            raise APIError("Invalid credentials", status=HTTPStatus.UNAUTHORIZED)
-
-        token = create_access_token(identity=str(user.id))
-        user_out = UserOutSchema.model_validate(user)
+        """Authenticate user and return access token"""
+        token, user_out = AuthService.authenticate_user(data)
         return to_json({"access_token": token, "user": user_out})
 
 class AuthRefreshAPI(MethodView):
+    """Token refresh endpoint"""
+    
     @jwt_required()
     def post(self):
         """Refresh the access token for the current user"""
         user_id = get_current_user_id()
-        user = User.query.get(user_id)
-        if not user:
-            raise APIError("User not found", status=HTTPStatus.NOT_FOUND)
-        
-        # Create a new token
-        new_token = create_access_token(identity=str(user.id))
-        user_out = UserOutSchema.model_validate(user)
+        new_token, user_out = AuthService.refresh_user_token(user_id)
         return to_json({"access_token": new_token, "user": user_out})
 
 # register

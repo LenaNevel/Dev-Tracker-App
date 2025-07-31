@@ -13,6 +13,7 @@ export interface Task {
   status: TaskStatus;
   user_id: number;
   created_at: string;
+  updated_at?: string;
 }
 
 export interface CreateTaskData {
@@ -33,6 +34,12 @@ export async function createTask(taskData: CreateTaskData) {
 
 export async function getTasks() {
   return authenticatedAPI.request<{ tasks: Task[] }>('/tasks', {
+    method: 'GET',
+  });
+}
+
+export async function getTask(taskId: number) {
+  return authenticatedAPI.request<{ task: Task }>(`/tasks/${taskId}`, {
     method: 'GET',
   });
 }

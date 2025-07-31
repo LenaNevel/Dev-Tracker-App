@@ -2,19 +2,12 @@
 
 import { useEffect, useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
-import { getTasks, Task, TaskStatus } from '../../api/task';
+import { getTasks, getTask, updateTask, Task, TaskStatus } from '../../api/task';
 import TaskModal from "../../components/TaskModal";
+import TaskEditModal from "../../components/TaskEditModal";
 import './dashboard.css';
 
-const STATUS_CONFIG = {
-  backlog: { label: '🧠 Backlog', emoji: '🧠' },
-  in_progress: { label: '🔨 In Progress', emoji: '🔨' },
-  in_review: { label: '🧐 In Review', emoji: '🧐' },
-  done: { label: '✅ Done', emoji: '✅' },
-  wont_do: { label: '🚫 Won\'t Do', emoji: '🚫' }
-};
-
-const STATUS_ORDER: TaskStatus[] = ['backlog', 'in_progress', 'in_review', 'done', 'wont_do'];
+import { TASK_STATUS_CONFIG, TASK_STATUS_ORDER } from '../../constants/taskStatus';
 
 export default function DashboardPage() {
   const { isAuthenticated } = useAuth();
@@ -22,6 +15,9 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [statusFilter, setStatusFilter] = useState<'all' | TaskStatus>('all');
+  const [editModalOpen, setEditModalOpen] = useState(false);
+  const [editingTask, setEditingTask] = useState<Task | null>(null);
+  const [isLoadingTask, setIsLoadingTask] = useState(false);
 
   useEffect(() => {
     const fetchTasks = async () => {
@@ -49,6 +45,36 @@ export default function DashboardPage() {
 
     fetchTasks();
   }, [isAuthenticated]);
+
+  const handleEditTask = async (taskId: number) => {
+    setIsLoadingTask(true);
+    try {
+      const response = await getTask(taskId);
+      if (response.status === 'success' && response.data) {
+        setEditingTask(response.data.task);
+        setEditModalOpen(true);
+      } else {
+        setError(response.error || 'Failed to load task details');
+      }
+    } catch (err) {
+      setError('Failed to load task details');
+    } finally {
+      setIsLoadingTask(false);
+    }
+  };
+
+  const handleTaskUpdate = (taskId: number, updatedTask: Task) => {
+    setTasks(prev => prev.map(task => 
+      task.id === taskId ? { ...task, ...updatedTask } : task
+    ));
+    setEditModalOpen(false);
+    setEditingTask(null);
+  };
+
+  const handleCloseEditModal = () => {
+    setEditModalOpen(false);
+    setEditingTask(null);
+  };
 
   const groupTasksByStatus = (tasks: Task[]) => {
     const grouped: Record<TaskStatus, Task[]> = {
@@ -83,6 +109,36 @@ export default function DashboardPage() {
 
   const filteredTasks = statusFilter === 'all' ? tasks : tasks.filter(task => task.status === statusFilter);
   const groupedTasks = groupTasksByStatus(filteredTasks);
+
+  // Create task cards for each status
+  const createTaskCards = (statusTasks: Task[]) => {
+    return statusTasks.map((task) => (
+      <div 
+        key={task.id} 
+        className="task-card"
+        onClick={() => handleEditTask(task.id)}
+      >
+        <h4 className="task-title">{task.title}</h4>
+      </div>
+    ));
+  };
+
+  // Create kanban columns
+  const kanbanColumns = TASK_STATUS_ORDER.map((status) => (
+    <div key={status} className="kanban-column">
+      <div className="column-header">
+        <h3 className="column-title">
+          {TASK_STATUS_CONFIG[status].label}
+        </h3>
+        <span className="task-count">
+          {groupedTasks[status].length}
+        </span>
+      </div>
+      <div className="column-tasks">
+        {createTaskCards(groupedTasks[status])}
+      </div>
+    </div>
+  ));
 
   return (
     <main className="page">
@@ -136,29 +192,17 @@ export default function DashboardPage() {
 
         {tasks.length > 0 && (
           <div className="kanban-board">
-            {STATUS_ORDER.map((status) => (
-              <div key={status} className="kanban-column">
-                <div className="column-header">
-                  <h3 className="column-title">
-                    {STATUS_CONFIG[status].label}
-                  </h3>
-                  <span className="task-count">
-                    {groupedTasks[status].length}
-                  </span>
-                </div>
-                <div className="column-tasks">
-                  {groupedTasks[status].map((task) => (
-                    <div key={task.id} className="task-card">
-                      <h4 className="task-title">{task.title}</h4>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            ))}
+            {kanbanColumns}
           </div>
         )}
       </div>
       <TaskModal />
+      <TaskEditModal 
+        isOpen={editModalOpen}
+        task={editingTask}
+        onClose={handleCloseEditModal}
+        onUpdate={handleTaskUpdate}
+      />
     </main>
   );
 }

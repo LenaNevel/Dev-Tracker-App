@@ -12,7 +12,7 @@ interface RequestOptions {
   headers?: Record<string, string>;
 }
 
-const BASE_URL = 'http://127.0.0.1:5000';
+const BASE_URL = 'http://127.0.0.1:5001';
 
 export async function apiRequest<T = any>(
   endpoint: string,

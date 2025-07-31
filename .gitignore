@@ -18,3 +18,6 @@ frontend/node_modules/
 
 # OS stuff
 .DS_Store
+
+# Claude Development Notes
+CLAUDE.md
