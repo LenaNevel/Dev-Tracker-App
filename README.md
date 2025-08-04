@@ -1,7 +1,7 @@
-# 🛠️ Dev Tracker
+# 📌 Trackly
 
 **Track, Prioritize, Ship — Your Way.**  
-A minimalist issue tracker for solo developers and small teams.
+A lightweight issue tracker built for solo developers and freelancers.
 
 ## 🚀 Features
 - User registration and login
@@ -9,7 +9,7 @@ A minimalist issue tracker for solo developers and small teams.
 - Create, edit, and delete tasks
 - View task details with ✏️ edit functionality
 - Status updates (Backlog, In Progress, In Review, Done, Won't Do)
-- Real-time UI updates
+- Responsive UI with instant feedback
 - Built with Flask + Next.js
 
 ## 📚 Documentation
@@ -60,6 +60,13 @@ This repository holds two projects:
 You can browse each folder's README for detailed setup steps, environment variables, and usage examples.
 
 ---
+
+## 🔜 Coming Soon
+- Personal task notes for progress tracking
+- Environment-based deployment support (local vs. production)
+- A public "About" page w/ press release and story
+- One-click deployment guide (free tier-friendly)
+- Future roadmap: Expand to support CS, Sales, and Team Workflows
 
 ## 📄 License
 MIT License

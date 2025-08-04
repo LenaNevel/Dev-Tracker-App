@@ -1,6 +1,6 @@
-# Dev Tracker App — Backend
+# Trackly — Backend
 
-This is the Flask REST API for Dev Tracker App.
+This is the Flask REST API for Trackly.
 
 ## Setup
 

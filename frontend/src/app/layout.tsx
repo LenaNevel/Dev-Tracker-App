@@ -4,6 +4,11 @@ import Footer from '../components/Footer'; // if you've made it one
 import { AuthProvider } from '../context/AuthContext';
 import { TaskModalProvider } from '../context/TaskModalContext';
 
+export const metadata = {
+  title: 'Trackly - Track, Prioritize, Ship — Your Way',
+  description: 'A lightweight issue tracker built for solo developers and freelancers.',
+};
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">

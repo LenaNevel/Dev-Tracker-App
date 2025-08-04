@@ -1,5 +1,5 @@
 {
-  "name": "dev-tracker-app",
+  "name": "trackly",
   "version": "1.0.0",
   "scripts": {
     "dev": "concurrently \"npm run backend\" \"npm run frontend\"",

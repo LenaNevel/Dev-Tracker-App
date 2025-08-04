@@ -23,7 +23,7 @@ export default function HomePage() {
             <Link href="/login" className="btn-secondary">Log In</Link>
           </div>
           <p className="description">
-            Dev Tracker is a simple, personal issue tracker designed for solo developers and small teams.
+            Trackly is a simple, personal issue tracker designed for solo developers and small teams.
           </p>
         </div>
       </main>

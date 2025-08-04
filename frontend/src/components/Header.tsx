@@ -31,7 +31,7 @@ export default function Header() {
   return (
     <header className="header">
       <Link href="/" className="logo">
-        Dev Tracker
+        Trackly
       </Link>
       {actionButtons}
     </header>
