@@ -117,3 +117,10 @@ class TaskOutSchema(BaseModel):
             obj_dict['status'] = obj.status.value
             return super().model_validate(obj_dict)
         return super().model_validate(obj)
+
+
+class TaskReorderSchema(BaseModel):
+    target_status: str = Field(..., description="Status column to move task to")
+    target_position: int = Field(..., ge=0, description="0-based index position in target column")
+    
+    model_config = ConfigDict(str_strip_whitespace=True)

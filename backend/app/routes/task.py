@@ -3,7 +3,7 @@ from flask import Blueprint, jsonify
 from flask.views import MethodView
 from flask_jwt_extended import jwt_required
 from flask_jwt_extended.exceptions import JWTExtendedException
-from app.schemas import TaskCreateSchema, TaskUpdateSchema
+from app.schemas import TaskCreateSchema, TaskUpdateSchema, TaskReorderSchema
 from app.services.task_service import TaskService
 from app.utils import validate_input, to_json, get_current_user_id
 
@@ -61,9 +61,24 @@ class SingleTaskAPI(MethodView):
         TaskService.delete_task(task_id, user_id)
         return to_json({"message": "Task deleted successfully"})
 
+
+class TaskReorderAPI(MethodView):
+    """Task reordering endpoint"""
+    
+    @jwt_required()
+    @validate_input(TaskReorderSchema)
+    def post(self, data: TaskReorderSchema, task_id: int):
+        """Reorder a task to a new position within a status column"""
+        user_id = get_current_user_id()
+        task_out = TaskService.reorder_task(task_id, data.target_status, data.target_position, user_id)
+        return to_json({"task": task_out})
+
 # Register the views
 task_view = TaskAPI.as_view("task_api")
 task_bp.add_url_rule("", view_func=task_view, methods=["GET", "POST", "OPTIONS"])
 
 single_task_view = SingleTaskAPI.as_view("single_task_api")
 task_bp.add_url_rule("/<int:task_id>", view_func=single_task_view, methods=["GET", "PUT", "DELETE"])
+
+reorder_view = TaskReorderAPI.as_view("task_reorder_api")
+task_bp.add_url_rule("/<int:task_id>/reorder", view_func=reorder_view, methods=["POST"])

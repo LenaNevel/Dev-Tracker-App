@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
-import { getTasks, getTask, updateTask, updateTaskStatus, Task, TaskStatus } from '../../api/task';
+import { getTasks, getTask, updateTask, updateTaskStatus, reorderTask, Task, TaskStatus } from '../../api/task';
 import TaskModal from "../../components/TaskModal";
 import TaskEditModal from "../../components/TaskEditModal";
 import DroppableColumn from "../../components/DroppableColumn";
@@ -32,6 +32,7 @@ export default function DashboardPage() {
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [isLoadingTask, setIsLoadingTask] = useState(false);
   const [activeTask, setActiveTask] = useState<Task | null>(null);
+  const [isProcessingDrop, setIsProcessingDrop] = useState(false);
 
   // Configure drag sensors for better mobile support
   const sensors = useSensors(
@@ -125,46 +126,118 @@ export default function DashboardPage() {
   const handleDragEnd = async (event: DragEndEvent) => {
     const { active, over } = event;
     setActiveTask(null);
+    setIsProcessingDrop(true);
 
     if (!over || !active.data.current?.task) return;
 
-    const task = active.data.current.task as Task;
-    const newStatus = over.data.current?.status as TaskStatus;
-
-    // Don't update if dropped in the same column
-    if (task.status === newStatus) return;
-
+    const draggedTask = active.data.current.task as Task;
+    const targetStatus = over.data.current?.status as TaskStatus;
+    
     // Find the original task for rollback
-    const originalTask = tasks.find(t => t.id === task.id);
+    const originalTask = tasks.find(t => t.id === draggedTask.id);
     if (!originalTask) return;
 
-    // Optimistic update
-    setTasks(prev => prev.map(t => 
-      t.id === task.id ? { ...t, status: newStatus } : t
-    ));
+    // Calculate target position based on drop target type
+    let targetPosition = 0;
+
+    if (over.data.current?.type === 'position') {
+      // Dropping on a specific position drop zone
+      targetPosition = over.data.current.position as number;
+    } else if (over.data.current?.type === 'task') {
+      // Dropping on a specific task (insert before it)
+      const targetTask = over.data.current.task as Task;
+      const targetColumnTasks = tasks.filter(t => t.status === targetStatus && t.id !== draggedTask.id);
+      targetPosition = targetColumnTasks.findIndex(t => t.id === targetTask.id);
+      if (targetPosition === -1) targetPosition = targetColumnTasks.length;
+    } else {
+      // Dropping on column (add to end)
+      const targetColumnTasks = tasks.filter(t => t.status === targetStatus && t.id !== draggedTask.id);
+      targetPosition = targetColumnTasks.length;
+    }
+
+    // Skip if no actual change needed
+    if (draggedTask.status === targetStatus) {
+      // Get current position of the dragged task
+      const allTasksInColumn = tasks.filter(t => t.status === targetStatus);
+      const currentPosition = allTasksInColumn.findIndex(t => t.id === draggedTask.id);
+      if (currentPosition === targetPosition) {
+        setIsProcessingDrop(false);
+        return;
+      }
+    }
+
+    // Optimistic update - reorder tasks locally
+    const updatedTask = { ...draggedTask, status: targetStatus };
+    setTasks(prev => {
+      // Remove the dragged task from its current position
+      const withoutDragged = prev.filter(t => t.id !== draggedTask.id);
+      
+      // Get tasks in target column
+      const targetTasks = withoutDragged.filter(t => t.status === targetStatus);
+      const otherTasks = withoutDragged.filter(t => t.status !== targetStatus);
+      
+      // Insert at target position
+      targetTasks.splice(targetPosition, 0, updatedTask);
+      
+      return [...otherTasks, ...targetTasks];
+    });
 
     try {
-      const response = await updateTaskStatus(task.id, newStatus);
+      const response = await reorderTask(draggedTask.id, targetStatus, targetPosition);
       if (response.status === 'success' && response.data) {
-        // Update with the actual response data
-        setTasks(prev => prev.map(t => 
-          t.id === task.id ? { ...t, ...response.data.task } : t
-        ));
-        // Clear any previous errors
+        // Only update if there are meaningful differences to avoid unnecessary re-renders
+        const apiTask = response.data.task;
+        setTasks(prev => prev.map(t => {
+          if (t.id === draggedTask.id) {
+            // Preserve the optimistic update structure and only update sort_order if different
+            const currentTask = t;
+            const needsUpdate = 
+              currentTask.sort_order !== apiTask.sort_order ||
+              currentTask.status !== apiTask.status ||
+              currentTask.updated_at !== apiTask.updated_at;
+            
+            if (needsUpdate) {
+              return { ...currentTask, ...apiTask };
+            }
+            return currentTask;
+          }
+          return t;
+        }));
         setError(null);
       } else {
-        // Rollback on API error
-        setTasks(prev => prev.map(t => 
-          t.id === task.id ? originalTask : t
-        ));
-        setError(response.error || 'Failed to update task status');
+        // Rollback on API error - smooth transition back
+        setTasks(prev => {
+          const rollbackTasks = prev.filter(t => t.id !== draggedTask.id);
+          const targetTasks = rollbackTasks.filter(t => t.status === originalTask.status);
+          const otherTasks = rollbackTasks.filter(t => t.status !== originalTask.status);
+          
+          // Find original position and restore smoothly
+          const originalPosition = tasks.filter(t => t.status === originalTask.status)
+            .findIndex(t => t.id === originalTask.id);
+          targetTasks.splice(originalPosition, 0, originalTask);
+          
+          return [...otherTasks, ...targetTasks];
+        });
+        setError(response.error || 'Failed to reorder task');
       }
     } catch (err) {
-      // Rollback on network error
-      setTasks(prev => prev.map(t => 
-        t.id === task.id ? originalTask : t
-      ));
-      setError('Failed to update task status');
+      // Rollback on network error - smooth transition back  
+      setTasks(prev => {
+        const rollbackTasks = prev.filter(t => t.id !== draggedTask.id);
+        const targetTasks = rollbackTasks.filter(t => t.status === originalTask.status);
+        const otherTasks = rollbackTasks.filter(t => t.status !== originalTask.status);
+        
+        // Find original position and restore smoothly
+        const originalPosition = tasks.filter(t => t.status === originalTask.status)
+          .findIndex(t => t.id === originalTask.id);
+        targetTasks.splice(originalPosition, 0, originalTask);
+        
+        return [...otherTasks, ...targetTasks];
+      });
+      setError('Failed to reorder task');
+    } finally {
+      // Add a small delay to ensure smooth transition completion
+      setTimeout(() => setIsProcessingDrop(false), 150);
     }
   };
 
@@ -228,7 +301,7 @@ export default function DashboardPage() {
             onDragStart={handleDragStart}
             onDragEnd={handleDragEnd}
           >
-            <div className="kanban-board">
+            <div className={`kanban-board ${isProcessingDrop ? 'processing-drop' : ''}`}>
               {TASK_STATUS_ORDER.map((status) => (
                 <DroppableColumn
                   key={status}
@@ -236,6 +309,8 @@ export default function DashboardPage() {
                   tasks={groupedTasks[status]}
                   onTaskClick={handleEditTask}
                   onTaskDelete={handleTaskDelete}
+                  isDragging={activeTask !== null}
+                  activeTask={activeTask}
                 />
               ))}
             </div>

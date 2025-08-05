@@ -63,3 +63,13 @@ export async function deleteTask(taskId: number) {
     method: 'DELETE',
   });
 }
+
+export async function reorderTask(taskId: number, targetStatus: TaskStatus, targetPosition: number) {
+  return authenticatedAPI.request<{ task: Task }>(`/tasks/${taskId}/reorder`, {
+    method: 'POST',
+    body: {
+      target_status: targetStatus,
+      target_position: targetPosition,
+    },
+  });
+}

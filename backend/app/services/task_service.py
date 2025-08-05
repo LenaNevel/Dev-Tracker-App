@@ -22,7 +22,7 @@ class TaskService:
             tasks = Task.query.filter_by(
                 user_id=user_id, 
                 is_deleted=False
-            ).order_by(Task.created_at.desc()).all()
+            ).order_by(Task.status, Task.sort_order).all()
             
             return [TaskTableSchema.model_validate(task) for task in tasks]
         except Exception as e:
@@ -163,3 +163,83 @@ class TaskService:
         
         task.is_deleted = True
         task.save()
+
+    @staticmethod
+    def reorder_task(task_id: int, target_status: str, target_position: int, user_id: int) -> TaskOutSchema:
+        """
+        Reorder a task to a new position within its status column.
+        
+        Args:
+            task_id: ID of the task to reorder
+            target_status: Status column to move to (can be same as current)
+            target_position: 0-based index position in the target column
+            user_id: ID of the user (for authorization)
+            
+        Returns:
+            Updated task data
+            
+        Raises:
+            APIError: If task not found or database error
+        """
+        from app.extensions import db
+        
+        try:
+            # Get the task to reorder
+            task = Task.query.filter_by(
+                id=task_id, 
+                user_id=user_id, 
+                is_deleted=False
+            ).first()
+            
+            if not task:
+                raise APIError("Task not found", status=HTTPStatus.NOT_FOUND)
+            
+            # Validate target status
+            try:
+                target_status_enum = TaskStatus(target_status)
+            except ValueError:
+                raise APIError("Invalid status", status=HTTPStatus.BAD_REQUEST)
+            
+            # Get all tasks in target status column ordered by sort_order
+            target_tasks = Task.query.filter_by(
+                user_id=user_id,
+                status=target_status_enum,
+                is_deleted=False
+            ).filter(Task.id != task_id).order_by(Task.sort_order).all()
+            
+            # Calculate new sort_order based on target position
+            if target_position <= 0:
+                # Moving to beginning
+                if target_tasks:
+                    new_sort_order = target_tasks[0].sort_order - 1000.0
+                else:
+                    new_sort_order = 1000.0
+                    
+            elif target_position >= len(target_tasks):
+                # Moving to end
+                if target_tasks:
+                    new_sort_order = target_tasks[-1].sort_order + 1000.0
+                else:
+                    new_sort_order = 1000.0
+                    
+            else:
+                # Moving to middle - find fractional position
+                before_task = target_tasks[target_position - 1]
+                after_task = target_tasks[target_position]
+                new_sort_order = (before_task.sort_order + after_task.sort_order) / 2.0
+            
+            # Update task
+            task.status = target_status_enum
+            task.sort_order = new_sort_order
+            task.save()
+            
+            return TaskOutSchema.model_validate(task)
+            
+        except APIError:
+            raise
+        except Exception as e:
+            raise APIError(
+                "Database error during reorder",
+                status=HTTPStatus.INTERNAL_SERVER_ERROR,
+                original=e
+            )
