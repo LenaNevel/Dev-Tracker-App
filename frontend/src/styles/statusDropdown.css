@@ -1,0 +1,154 @@
+.status-dropdown {
+  position: relative;
+  display: inline-block;
+}
+
+.status-trigger {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.25rem 0.5rem;
+  border: 1px solid var(--color-neutral-300);
+  border-radius: 4px;
+  background: white;
+  font-size: 0.75rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-width: 100px;
+}
+
+.status-trigger:hover:not(.disabled) {
+  border-color: var(--color-primary);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.status-trigger.disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.status-emoji {
+  font-size: 0.875rem;
+}
+
+.status-label {
+  font-weight: 500;
+  color: var(--color-neutral-700);
+  flex: 1;
+  text-align: left;
+}
+
+.dropdown-arrow {
+  font-size: 0.625rem;
+  color: var(--color-neutral-500);
+  transition: transform 0.2s ease;
+}
+
+.status-trigger[aria-expanded="true"] .dropdown-arrow {
+  transform: rotate(180deg);
+}
+
+.status-dropdown-menu {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: white;
+  border: 1px solid var(--color-neutral-300);
+  border-radius: 6px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 1000;
+  max-height: 200px;
+  overflow-y: auto;
+  margin-top: 2px;
+}
+
+.status-option {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  border: none;
+  background: white;
+  font-size: 0.75rem;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  text-align: left;
+}
+
+.status-option:hover {
+  background: var(--color-neutral-50);
+}
+
+.status-option.selected {
+  background: var(--color-primary-light, var(--color-neutral-100));
+  color: var(--color-primary-dark, var(--color-neutral-800));
+}
+
+.status-option .status-label {
+  flex: 1;
+  font-weight: 500;
+}
+
+.check-mark {
+  font-size: 0.75rem;
+  color: var(--color-primary, #007bff);
+  font-weight: bold;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .status-trigger {
+    min-width: 90px;
+    padding: 0.375rem 0.5rem;
+    font-size: 0.7rem;
+  }
+  
+  .status-option {
+    padding: 0.75rem;
+    font-size: 0.75rem;
+  }
+}
+
+/* Task card integration styles */
+.task-card .status-dropdown {
+  margin-top: 0.5rem;
+}
+
+.task-card:hover .status-dropdown {
+  opacity: 1;
+}
+
+/* Metadata panel integration styles */
+.metadata-card .status-dropdown {
+  margin-top: 0.25rem;
+}
+
+.metadata-card .status-trigger {
+  width: 100%;
+  justify-content: space-between;
+  font-size: 0.875rem;
+}
+
+/* Subtle animation for status changes */
+.status-dropdown.updating .status-trigger {
+  opacity: 0.7;
+  pointer-events: none;
+}
+
+.status-dropdown.updating .status-trigger::after {
+  content: '';
+  width: 12px;
+  height: 12px;
+  border: 2px solid var(--color-primary);
+  border-top: 2px solid transparent;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-left: 0.25rem;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}

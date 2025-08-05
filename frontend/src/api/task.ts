@@ -51,6 +51,13 @@ export async function updateTask(taskId: number, taskData: Partial<CreateTaskDat
   });
 }
 
+export async function updateTaskStatus(taskId: number, status: TaskStatus) {
+  return authenticatedAPI.request<{ task: Task }>(`/tasks/${taskId}`, {
+    method: 'PUT',
+    body: { status },
+  });
+}
+
 export async function deleteTask(taskId: number) {
   return authenticatedAPI.request<{ message: string }>(`/tasks/${taskId}`, {
     method: 'DELETE',

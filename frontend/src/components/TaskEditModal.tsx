@@ -1,18 +1,23 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Task, TaskStatus, updateTask } from '../api/task';
+import { Task, TaskStatus, updateTask, updateTaskStatus } from '../api/task';
 import { useForm } from '../hooks/useForm';
 import { Modal } from './ui/Modal';
 import { FormField } from './ui/FormField';
 import { Button } from './ui/Button';
+import StatusDropdown from './StatusDropdown';
+import DeleteTaskButton from './DeleteTaskButton';
 import { TASK_STATUS_OPTIONS, getStatusLabel } from '../constants/taskStatus';
+import '../styles/statusDropdown.css';
+import '../styles/deleteButton.css';
 
 interface TaskEditModalProps {
   isOpen: boolean;
   task: Task | null;
   onClose: () => void;
   onUpdate: (taskId: number, updatedTask: Task) => void;
+  onDelete: (taskId: number) => void;
 }
 
 interface TaskFormData {
@@ -24,7 +29,7 @@ interface TaskFormData {
   status: TaskStatus;
 }
 
-export default function TaskEditModal({ isOpen, task, onClose, onUpdate }: TaskEditModalProps) {
+export default function TaskEditModal({ isOpen, task, onClose, onUpdate, onDelete }: TaskEditModalProps) {
   const [isEditing, setIsEditing] = useState(false);
 
   const getTaskFormData = (task: Task | null): TaskFormData => {
@@ -115,6 +120,21 @@ export default function TaskEditModal({ isOpen, task, onClose, onUpdate }: TaskE
     onClose();
   };
 
+  const handleStatusChange = async (newStatus: TaskStatus) => {
+    if (!task || task.status === newStatus) return;
+
+    try {
+      const response = await updateTaskStatus(task.id, newStatus);
+      if (response.status === 'success' && response.data) {
+        onUpdate(task.id, response.data.task);
+      } else {
+        setError(response.error || 'Failed to update task status');
+      }
+    } catch (err) {
+      setError('Failed to update task status');
+    }
+  };
+
   if (!isOpen || !task) return null;
 
   const modalTitle = isEditing ? '✏️ Edit Task' : task.title;
@@ -128,12 +148,35 @@ export default function TaskEditModal({ isOpen, task, onClose, onUpdate }: TaskE
     </Button>
   );
 
+  const deleteButton = (
+    <DeleteTaskButton
+      taskId={task.id}
+      taskTitle={task.title}
+      onDelete={onDelete}
+      variant="icon"
+    />
+  );
+
+  const readOnlyActions = (
+    <div className="modal-header-actions">
+      {editButton}
+      {deleteButton}
+    </div>
+  );
+
   const metadataPanel = (
     <div className="metadata-panel">
       <div className="metadata-spacer"></div>
       <div className="metadata-card">
         <label>Status</label>
-        <div className="metadata-value">{statusLabel}</div>
+        {!isEditing ? (
+          <StatusDropdown
+            currentStatus={task.status}
+            onStatusChange={handleStatusChange}
+          />
+        ) : (
+          <div className="metadata-value">{statusLabel}</div>
+        )}
       </div>
       <div className="metadata-card">
         <label>Created</label>
@@ -201,6 +244,32 @@ export default function TaskEditModal({ isOpen, task, onClose, onUpdate }: TaskE
         value={values.acceptance_criteria}
         onChange={(e) => handleChange('acceptance_criteria', e.target.value)}
       />
+      
+      <div className="modal-actions">
+        <DeleteTaskButton
+          taskId={task.id}
+          taskTitle={task.title}
+          onDelete={onDelete}
+          variant="button"
+        />
+        <div className="action-buttons-right">
+          <Button 
+            type="submit" 
+            variant="primary"
+            loading={isSubmitting}
+          >
+            Save Changes
+          </Button>
+          <Button 
+            type="button" 
+            variant="secondary"
+            onClick={handleCancel}
+            disabled={isSubmitting}
+          >
+            Cancel
+          </Button>
+        </div>
+      </div>
     </form>
   );
 
@@ -209,7 +278,7 @@ export default function TaskEditModal({ isOpen, task, onClose, onUpdate }: TaskE
       <Modal.Header 
         title={modalTitle} 
         onClose={handleClose}
-        actions={!isEditing ? editButton : undefined}
+        actions={!isEditing ? readOnlyActions : undefined}
       />
 
       {error && <div className="error-message">{error}</div>}
@@ -223,26 +292,6 @@ export default function TaskEditModal({ isOpen, task, onClose, onUpdate }: TaskE
         )}
       </Modal.Body>
 
-      {isEditing && (
-        <Modal.Actions>
-          <Button 
-            type="submit" 
-            variant="primary"
-            onClick={onSubmit}
-            loading={isSubmitting}
-          >
-            Save Changes
-          </Button>
-          <Button 
-            type="button" 
-            variant="secondary"
-            onClick={handleCancel}
-            disabled={isSubmitting}
-          >
-            Cancel
-          </Button>
-        </Modal.Actions>
-      )}
     </Modal>
   );
 }

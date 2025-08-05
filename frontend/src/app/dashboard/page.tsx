@@ -2,10 +2,24 @@
 
 import { useEffect, useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
-import { getTasks, getTask, updateTask, Task, TaskStatus } from '../../api/task';
+import { getTasks, getTask, updateTask, updateTaskStatus, Task, TaskStatus } from '../../api/task';
 import TaskModal from "../../components/TaskModal";
 import TaskEditModal from "../../components/TaskEditModal";
+import DroppableColumn from "../../components/DroppableColumn";
+import TaskDragOverlay from "../../components/TaskDragOverlay";
+import { 
+  DndContext, 
+  DragEndEvent, 
+  DragStartEvent,
+  PointerSensor,
+  TouchSensor,
+  useSensor,
+  useSensors,
+  DragOverEvent,
+  closestCenter
+} from '@dnd-kit/core';
 import './dashboard.css';
+import '../../styles/dragAndDrop.css';
 
 import { TASK_STATUS_CONFIG, TASK_STATUS_ORDER } from '../../constants/taskStatus';
 
@@ -14,10 +28,25 @@ export default function DashboardPage() {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [statusFilter, setStatusFilter] = useState<'all' | TaskStatus>('all');
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [isLoadingTask, setIsLoadingTask] = useState(false);
+  const [activeTask, setActiveTask] = useState<Task | null>(null);
+
+  // Configure drag sensors for better mobile support
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8, // 8px movement required to start drag
+      },
+    }),
+    useSensor(TouchSensor, {
+      activationConstraint: {
+        delay: 200, // 200ms delay for touch to prevent accidental drags
+        tolerance: 8, // 8px tolerance for touch movement
+      },
+    })
+  );
 
   useEffect(() => {
     const fetchTasks = async () => {
@@ -29,7 +58,6 @@ export default function DashboardPage() {
       try {
         const response = await getTasks();
         if (response.status === 'success' && response.data) {
-          console.log('DEBUG: Received tasks:', response.data.tasks);
           setTasks(response.data.tasks);
         } else {
           console.error('API Error:', response);
@@ -67,14 +95,79 @@ export default function DashboardPage() {
     setTasks(prev => prev.map(task => 
       task.id === taskId ? { ...task, ...updatedTask } : task
     ));
-    setEditModalOpen(false);
-    setEditingTask(null);
+    // Update the editing task with the new data so the modal shows updated content
+    setEditingTask(updatedTask);
   };
 
   const handleCloseEditModal = () => {
     setEditModalOpen(false);
     setEditingTask(null);
   };
+
+  const handleTaskDelete = (taskId: number) => {
+    // Remove task from UI immediately (optimistic delete)
+    setTasks(prev => prev.filter(task => task.id !== taskId));
+    
+    // Close modal if the deleted task was being viewed/edited
+    if (editingTask && editingTask.id === taskId) {
+      setEditModalOpen(false);
+      setEditingTask(null);
+    }
+  };
+
+  const handleDragStart = (event: DragStartEvent) => {
+    const { active } = event;
+    if (active.data.current?.type === 'task') {
+      setActiveTask(active.data.current.task);
+    }
+  };
+
+  const handleDragEnd = async (event: DragEndEvent) => {
+    const { active, over } = event;
+    setActiveTask(null);
+
+    if (!over || !active.data.current?.task) return;
+
+    const task = active.data.current.task as Task;
+    const newStatus = over.data.current?.status as TaskStatus;
+
+    // Don't update if dropped in the same column
+    if (task.status === newStatus) return;
+
+    // Find the original task for rollback
+    const originalTask = tasks.find(t => t.id === task.id);
+    if (!originalTask) return;
+
+    // Optimistic update
+    setTasks(prev => prev.map(t => 
+      t.id === task.id ? { ...t, status: newStatus } : t
+    ));
+
+    try {
+      const response = await updateTaskStatus(task.id, newStatus);
+      if (response.status === 'success' && response.data) {
+        // Update with the actual response data
+        setTasks(prev => prev.map(t => 
+          t.id === task.id ? { ...t, ...response.data.task } : t
+        ));
+        // Clear any previous errors
+        setError(null);
+      } else {
+        // Rollback on API error
+        setTasks(prev => prev.map(t => 
+          t.id === task.id ? originalTask : t
+        ));
+        setError(response.error || 'Failed to update task status');
+      }
+    } catch (err) {
+      // Rollback on network error
+      setTasks(prev => prev.map(t => 
+        t.id === task.id ? originalTask : t
+      ));
+      setError('Failed to update task status');
+    }
+  };
+
 
   const groupTasksByStatus = (tasks: Task[]) => {
     const grouped: Record<TaskStatus, Task[]> = {
@@ -107,38 +200,7 @@ export default function DashboardPage() {
     );
   }
 
-  const filteredTasks = statusFilter === 'all' ? tasks : tasks.filter(task => task.status === statusFilter);
-  const groupedTasks = groupTasksByStatus(filteredTasks);
-
-  // Create task cards for each status
-  const createTaskCards = (statusTasks: Task[]) => {
-    return statusTasks.map((task) => (
-      <div 
-        key={task.id} 
-        className="task-card"
-        onClick={() => handleEditTask(task.id)}
-      >
-        <h4 className="task-title">{task.title}</h4>
-      </div>
-    ));
-  };
-
-  // Create kanban columns
-  const kanbanColumns = TASK_STATUS_ORDER.map((status) => (
-    <div key={status} className="kanban-column">
-      <div className="column-header">
-        <h3 className="column-title">
-          {TASK_STATUS_CONFIG[status].label}
-        </h3>
-        <span className="task-count">
-          {groupedTasks[status].length}
-        </span>
-      </div>
-      <div className="column-tasks">
-        {createTaskCards(groupedTasks[status])}
-      </div>
-    </div>
-  ));
+  const groupedTasks = groupTasksByStatus(tasks);
 
   return (
     <main className="page">
@@ -157,43 +219,28 @@ export default function DashboardPage() {
           )}
         </div>
 
-        {tasks.length > 0 && (
-          <div className="filter-section">
-            <div className="filter-buttons">
-              <button 
-                className={`filter-btn ${statusFilter === 'all' ? 'active' : ''}`}
-                onClick={() => setStatusFilter('all')}
-              >
-                All Tasks
-              </button>
-              <button 
-                className={`filter-btn ${statusFilter === 'backlog' ? 'active' : ''}`}
-                onClick={() => setStatusFilter('backlog')}
-              >
-                🧠 Backlog
-              </button>
-              <button 
-                className={`filter-btn ${statusFilter === 'in_progress' ? 'active' : ''}`}
-                onClick={() => setStatusFilter('in_progress')}
-              >
-                🔨 In Progress
-              </button>
-              <button 
-                className={`filter-btn ${statusFilter === 'done' ? 'active' : ''}`}
-                onClick={() => setStatusFilter('done')}
-              >
-                ✅ Done
-              </button>
-            </div>
-          </div>
-        )}
-
         {error && <div className="error-message">{error}</div>}
 
         {tasks.length > 0 && (
-          <div className="kanban-board">
-            {kanbanColumns}
-          </div>
+          <DndContext
+            sensors={sensors}
+            collisionDetection={closestCenter}
+            onDragStart={handleDragStart}
+            onDragEnd={handleDragEnd}
+          >
+            <div className="kanban-board">
+              {TASK_STATUS_ORDER.map((status) => (
+                <DroppableColumn
+                  key={status}
+                  status={status}
+                  tasks={groupedTasks[status]}
+                  onTaskClick={handleEditTask}
+                  onTaskDelete={handleTaskDelete}
+                />
+              ))}
+            </div>
+            <TaskDragOverlay activeTask={activeTask} />
+          </DndContext>
         )}
       </div>
       <TaskModal />
@@ -202,6 +249,7 @@ export default function DashboardPage() {
         task={editingTask}
         onClose={handleCloseEditModal}
         onUpdate={handleTaskUpdate}
+        onDelete={handleTaskDelete}
       />
     </main>
   );

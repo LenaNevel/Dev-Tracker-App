@@ -1,0 +1,263 @@
+/* Drag and Drop Styles */
+
+/* Suppress default browser drag ghost image */
+.task-card {
+  -webkit-user-drag: none;
+  -khtml-user-drag: none;
+  -moz-user-drag: none;
+  -o-user-drag: none;
+  user-drag: none;
+}
+
+/* Dragging state for task cards - make original invisible but maintain layout */
+.task-card.dragging {
+  opacity: 0.3;
+  transform: none;
+  pointer-events: none;
+  position: relative;
+}
+
+/* Create a subtle placeholder effect */
+.task-card.dragging::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border: 2px dashed var(--color-neutral-300);
+  border-radius: 8px;
+  background: var(--color-neutral-50);
+  opacity: 0.8;
+}
+
+/* Drag overlay styling - smooth and clean, no tilt */
+.task-card.drag-overlay {
+  cursor: grabbing !important;
+  transform: scale(1.05);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+  border: 1px solid var(--color-primary);
+  background: white;
+  opacity: 0.95;
+  z-index: 9999;
+  transition: none;
+  pointer-events: none;
+}
+
+/* Drop target styling - smooth and subtle */
+.kanban-column.drop-target {
+  background: linear-gradient(135deg, var(--color-primary-light, #f0f8ff) 0%, rgba(255,255,255,0.9) 100%);
+  border: 2px solid var(--color-primary);
+  border-radius: 12px;
+  transform: scale(1.01);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 12px rgba(0, 123, 255, 0.15);
+}
+
+.kanban-column.drop-target .column-header {
+  color: var(--color-primary);
+  transition: color 0.3s ease;
+}
+
+.kanban-column.drop-target .column-header .column-title {
+  font-weight: 600;
+}
+
+/* Empty column placeholder */
+.empty-column-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem 1rem;
+  color: var(--color-neutral-400);
+  font-style: italic;
+  font-size: 0.875rem;
+  border: 2px dashed var(--color-neutral-200);
+  border-radius: 8px;
+  background: transparent;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  min-height: 80px;
+  margin: 0.5rem 0;
+}
+
+.kanban-column:hover .empty-column-placeholder {
+  border-color: var(--color-neutral-300);
+  color: var(--color-neutral-500);
+}
+
+.kanban-column.drop-target .empty-column-placeholder {
+  color: var(--color-primary);
+  border-color: var(--color-primary);
+  background: rgba(0, 123, 255, 0.05);
+  transform: scale(1.02);
+  animation: pulse-border 2s ease-in-out infinite;
+}
+
+@keyframes pulse-border {
+  0%, 100% { 
+    border-color: var(--color-primary);
+    opacity: 1;
+  }
+  50% { 
+    border-color: rgba(0, 123, 255, 0.6);
+    opacity: 0.8;
+  }
+}
+
+/* Task card drag handles and interactions */
+.task-card {
+  user-select: none;
+  touch-action: none;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: transform, box-shadow;
+  cursor: default;
+}
+
+.task-card-drag-area {
+  cursor: grab;
+  flex: 1;
+  padding: 0;
+  margin: 0;
+  padding-right: 2.5rem; /* Leave space for delete button */
+}
+
+.task-card-drag-area:hover {
+  cursor: grab;
+}
+
+.task-card-drag-area:active {
+  cursor: grabbing;
+}
+
+/* Subtle hover effect to indicate draggability */
+.task-card:hover:not(.dragging) {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  border-color: rgba(0, 123, 255, 0.3);
+}
+
+/* Add a subtle indicator that the card is draggable */
+.task-card::before {
+  content: '';
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 12px;
+  height: 8px;
+  background: 
+    radial-gradient(circle, var(--color-neutral-300) 1px, transparent 1px),
+    radial-gradient(circle, var(--color-neutral-300) 1px, transparent 1px);
+  background-size: 4px 4px;
+  background-position: 0 0, 0 4px;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.task-card:hover::before {
+  opacity: 0.6;
+}
+
+/* Column animations */
+.kanban-column {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: transform;
+}
+
+/* Smooth transitions for task movements */
+.column-tasks {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Focus states for accessibility */
+.task-card:focus {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 4px rgba(0, 123, 255, 0.1);
+}
+
+.kanban-column:focus-within {
+  box-shadow: 0 0 0 2px var(--color-primary-light, #e8f4fd);
+}
+
+/* Mobile-specific optimizations */
+@media (max-width: 768px) {
+  .task-card.drag-overlay {
+    transform: scale(1.03);
+  }
+  
+  .empty-column-placeholder {
+    padding: 1.5rem 0.75rem;
+    font-size: 0.8rem;
+    min-height: 60px;
+  }
+  
+  .kanban-column.drop-target {
+    transform: scale(1.005);
+  }
+  
+  /* Disable drag handle dots on mobile */
+  .task-card::before {
+    display: none;
+  }
+}
+
+/* Prevent layout shifts during drag operations */
+.kanban-board {
+  min-height: 400px;
+}
+
+/* Drop placeholder for showing where task will land */
+.drop-placeholder {
+  margin: 0.5rem 0;
+  animation: fadeIn 0.2s ease-in-out;
+}
+
+.drop-placeholder-line {
+  height: 2px;
+  background: linear-gradient(90deg, 
+    transparent 0%, 
+    var(--color-primary) 20%, 
+    var(--color-primary) 80%, 
+    transparent 100%
+  );
+  border-radius: 1px;
+  position: relative;
+  animation: pulse-line 1.5s ease-in-out infinite;
+}
+
+.drop-placeholder-line::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 8px;
+  height: 8px;
+  background: var(--color-primary);
+  border-radius: 50%;
+  animation: pulse-dot 1.5s ease-in-out infinite;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: scaleX(0); }
+  to { opacity: 1; transform: scaleX(1); }
+}
+
+@keyframes pulse-line {
+  0%, 100% { opacity: 0.8; }
+  50% { opacity: 1; }
+}
+
+@keyframes pulse-dot {
+  0%, 100% { transform: translate(-50%, -50%) scale(1); }
+  50% { transform: translate(-50%, -50%) scale(1.3); }
+}
+
+/* Ensure smooth rendering during drag */
+.task-card.dragging,
+.task-card.drag-overlay {
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  transform-style: preserve-3d;
+  -webkit-transform-style: preserve-3d;
+}

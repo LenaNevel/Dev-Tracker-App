@@ -15,6 +15,7 @@
   --color-neutral-800: #1F2937;
   --color-neutral-900: #111827;
 
+  --color-overlay: rgba(15, 118, 110, 0.2); /* Teal overlay with ~20% opacity */
   --color-error: #FF6B35;        /* Orange-red error color */
   --color-error-bg: #FFF4F1;     /* Light error background */
   --color-error-border: #FFD4CC; /* Error border color */

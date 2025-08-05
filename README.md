@@ -69,5 +69,8 @@ You can browse each folder's README for detailed setup steps, environment variab
 - Future roadmap: Expand to support CS, Sales, and Team Workflows
 
 ## 📄 License
-MIT License
 
+© 2025 Olena Nevel. All rights reserved.
+
+This project is publicly viewable for educational and portfolio purposes only.  
+**No copying, redistribution, or commercial use is permitted without explicit written permission.**

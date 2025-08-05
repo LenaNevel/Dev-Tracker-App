@@ -1,0 +1,138 @@
+/* Delete Task Button Styles */
+
+/* Icon variant for task cards */
+.delete-task-icon {
+  background: none;
+  border: none;
+  font-size: 0.875rem;
+  cursor: pointer;
+  padding: 0.25rem;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+  opacity: 0.6;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 24px;
+  min-height: 24px;
+}
+
+.delete-task-icon:hover:not(.deleting) {
+  opacity: 1;
+  background: rgba(220, 53, 69, 0.1);
+  transform: scale(1.1);
+}
+
+.delete-task-icon.deleting {
+  opacity: 0.7;
+  cursor: not-allowed;
+  animation: pulse 1s ease-in-out infinite;
+}
+
+/* Button variant for modals */
+.delete-task-button {
+  background: #dc3545;
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.delete-task-button:hover:not(.deleting) {
+  background: #c82333;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(220, 53, 69, 0.3);
+}
+
+.delete-task-button.deleting {
+  background: #6c757d;
+  cursor: not-allowed;
+  animation: pulse 1s ease-in-out infinite;
+}
+
+.delete-task-button:focus {
+  outline: 2px solid rgba(220, 53, 69, 0.5);
+  outline-offset: 2px;
+}
+
+/* Task card integration */
+.delete-button-container {
+  position: absolute;
+  top: 0.25rem;
+  right: 0.25rem;
+  z-index: 10;
+  padding: 0.25rem;
+  pointer-events: auto;
+}
+
+.task-card .delete-task-icon {
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.task-card:hover .delete-task-icon {
+  opacity: 0.6;
+}
+
+.task-card:hover .delete-task-icon:hover {
+  opacity: 1;
+}
+
+/* Modal integration */
+.modal-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.action-buttons-right {
+  display: flex;
+  gap: 1rem;
+}
+
+.modal-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.modal-header .delete-task-icon {
+  margin-left: 0.5rem;
+}
+
+/* Pulse animation for loading state */
+@keyframes pulse {
+  0%, 100% {
+    opacity: 0.7;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+  .delete-task-icon {
+    min-width: 28px;
+    min-height: 28px;
+    font-size: 1rem;
+  }
+  
+  .task-card .delete-task-icon {
+    opacity: 0.6; /* Always visible on mobile */
+  }
+  
+  .delete-task-button {
+    padding: 0.75rem 1rem;
+    font-size: 0.9rem;
+  }
+}

@@ -133,6 +133,8 @@
   display: flex;
   gap: 2rem;
   align-items: flex-start;
+  flex-direction: row;
+  width: 100%;
 }
 
 .content-panel {
@@ -148,6 +150,7 @@
   flex-direction: column;
   gap: 1rem;
   min-height: 100%;
+  align-self: flex-start;
 }
 
 .metadata-spacer {
