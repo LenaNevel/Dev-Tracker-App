@@ -1,154 +1,187 @@
+/* Modern StatusDropdown - No More Minecraft! */
 .status-dropdown {
   position: relative;
-  display: inline-block;
+  width: 100%;
 }
 
-.status-trigger {
-  display: flex;
-  align-items: center;
-  gap: 0.25rem;
-  padding: 0.25rem 0.5rem;
-  border: 1px solid var(--color-neutral-300);
-  border-radius: 4px;
-  background: white;
-  font-size: 0.75rem;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  min-width: 100px;
+.dropdown-toggle {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  width: 100% !important;
+  font-weight: 500 !important;
+  padding: 0.625rem 0.875rem !important;
+  background: white !important;
+  border: 1px solid #d1d5db !important; /* Fallback border */
+  border-radius: 8px !important;
+  cursor: pointer !important;
+  transition: all 0.15s ease !important;
+  font-size: 0.875rem !important;
+  color: #374151 !important; /* Fallback color */
+  box-sizing: border-box !important;
+  font-family: inherit !important;
 }
 
-.status-trigger:hover:not(.disabled) {
+.dropdown-toggle:hover:not(.disabled) {
   border-color: var(--color-primary);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 1px 3px rgba(20, 184, 166, 0.1);
 }
 
-.status-trigger.disabled {
+.dropdown-toggle:focus:not(.disabled) {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(20, 184, 166, 0.1);
+}
+
+.dropdown-toggle.disabled {
   opacity: 0.6;
   cursor: not-allowed;
+  background: var(--color-neutral-50);
 }
 
-.status-emoji {
-  font-size: 0.875rem;
+.toggle-content {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex: 1;
 }
 
 .status-label {
   font-weight: 500;
-  color: var(--color-neutral-700);
-  flex: 1;
-  text-align: left;
+  color: var(--color-neutral-800);
 }
 
 .dropdown-arrow {
-  font-size: 0.625rem;
+  font-size: 0.875rem;
   color: var(--color-neutral-500);
   transition: transform 0.2s ease;
+  transform: rotate(0deg);
+  margin-left: 0.5rem;
 }
 
-.status-trigger[aria-expanded="true"] .dropdown-arrow {
+.dropdown-arrow.open {
   transform: rotate(180deg);
 }
 
-.status-dropdown-menu {
+/* Status Emojis */
+.status-emoji {
+  display: inline-block;
+  font-size: 1rem;
+  flex-shrink: 0;
+  line-height: 1;
+}
+
+/* Dropdown Menu */
+.dropdown-menu {
   position: absolute;
-  top: 100%;
+  z-index: 1000;
+  top: calc(100% + 0.25rem);
   left: 0;
   right: 0;
   background: white;
-  border: 1px solid var(--color-neutral-300);
-  border-radius: 6px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  z-index: 1000;
-  max-height: 200px;
-  overflow-y: auto;
-  margin-top: 2px;
+  border: 1px solid var(--color-neutral-200);
+  border-radius: 8px;
+  box-shadow: 
+    0 6px 12px rgba(0, 0, 0, 0.12),
+    0 1px 3px rgba(0, 0, 0, 0.08);
+  padding: 0.25rem 0;
+  margin: 0;
+  list-style: none;
+  animation: dropdownFade 0.15s ease-out;
 }
 
-.status-option {
+@keyframes dropdownFade {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.dropdown-option {
+  padding: 0.625rem 0.875rem;
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  width: 100%;
-  padding: 0.5rem 0.75rem;
-  border: none;
-  background: white;
-  font-size: 0.75rem;
   cursor: pointer;
-  transition: background-color 0.2s ease;
-  text-align: left;
+  transition: all 0.15s ease;
+  color: var(--color-neutral-800);
+  font-size: 0.875rem;
 }
 
-.status-option:hover {
-  background: var(--color-neutral-50);
+.dropdown-option:hover {
+  background-color: var(--color-neutral-50);
 }
 
-.status-option.selected {
-  background: var(--color-primary-light, var(--color-neutral-100));
-  color: var(--color-primary-dark, var(--color-neutral-800));
+.dropdown-option.active {
+  background-color: var(--color-primary);
+  color: white;
 }
 
-.status-option .status-label {
+.dropdown-option.active .status-label,
+.dropdown-option.active .option-label {
+  color: white;
+}
+
+
+.option-label {
   flex: 1;
   font-weight: 500;
 }
 
 .check-mark {
   font-size: 0.75rem;
-  color: var(--color-primary, #007bff);
-  font-weight: bold;
+  font-weight: 600;
+  color: white;
+  margin-left: auto;
 }
 
-/* Responsive adjustments */
+/* Modal Integration Styles */
+.metadata-card .status-dropdown {
+  width: 100%;
+}
+
+.metadata-card .dropdown-toggle {
+  background: var(--color-neutral-50);
+  border-color: transparent;
+}
+
+.metadata-card .dropdown-toggle:hover:not(.disabled) {
+  background: white;
+  border-color: var(--color-primary);
+}
+
+/* Mobile Responsive */
 @media (max-width: 768px) {
-  .status-trigger {
-    min-width: 90px;
-    padding: 0.375rem 0.5rem;
-    font-size: 0.7rem;
+  .dropdown-toggle {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.8125rem;
   }
   
-  .status-option {
+  .dropdown-option {
     padding: 0.75rem;
-    font-size: 0.75rem;
+    font-size: 0.8125rem;
+  }
+  
+  .dropdown-menu {
+    box-shadow: 
+      0 8px 16px rgba(0, 0, 0, 0.15),
+      0 2px 4px rgba(0, 0, 0, 0.1);
   }
 }
 
-/* Task card integration styles */
-.task-card .status-dropdown {
-  margin-top: 0.5rem;
-}
-
-.task-card:hover .status-dropdown {
-  opacity: 1;
-}
-
-/* Metadata panel integration styles */
-.metadata-card .status-dropdown {
-  margin-top: 0.25rem;
-}
-
-.metadata-card .status-trigger {
-  width: 100%;
-  justify-content: space-between;
-  font-size: 0.875rem;
-}
-
-/* Subtle animation for status changes */
-.status-dropdown.updating .status-trigger {
-  opacity: 0.7;
-  pointer-events: none;
-}
-
-.status-dropdown.updating .status-trigger::after {
-  content: '';
-  width: 12px;
-  height: 12px;
-  border: 2px solid var(--color-primary);
-  border-top: 2px solid transparent;
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-  margin-left: 0.25rem;
-}
-
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+/* Accessibility Improvements */
+@media (prefers-reduced-motion: reduce) {
+  .dropdown-toggle,
+  .dropdown-option,
+  .dropdown-arrow {
+    transition: none;
+  }
+  
+  .dropdown-menu {
+    animation: none;
+  }
 }

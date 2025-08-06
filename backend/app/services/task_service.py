@@ -86,6 +86,7 @@ class TaskService:
             how=data.how,
             acceptance_criteria=data.acceptance_criteria,
             status=TaskStatus(data.status),
+            due_date=data.due_date,
             user_id=user_id
         )
         task.save()
@@ -124,18 +125,13 @@ class TaskService:
             raise APIError("Task not found", status=HTTPStatus.NOT_FOUND)
         
         # Update fields if provided
-        if data.title is not None:
-            task.title = data.title
-        if data.why is not None:
-            task.why = data.why
-        if data.what is not None:
-            task.what = data.what
-        if data.how is not None:
-            task.how = data.how
-        if data.acceptance_criteria is not None:
-            task.acceptance_criteria = data.acceptance_criteria
-        if data.status is not None:
-            task.status = TaskStatus(data.status)
+        update_data = data.model_dump(exclude_unset=True)
+        for field, value in update_data.items():
+            if hasattr(task, field) and value is not None:
+                if field == 'status':
+                    task.status = TaskStatus(value)
+                else:
+                    setattr(task, field, value)
             
         task.save()
         return TaskOutSchema.model_validate(task)

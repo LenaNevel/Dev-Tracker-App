@@ -1,0 +1,192 @@
+/* Task Create Modal - Extends TaskViewModal Design */
+
+/* Create Task Title */
+.create-task-title {
+  font-size: 1.75rem;
+  font-weight: 700;
+  line-height: 1.2;
+  color: var(--color-neutral-900);
+  margin: 0;
+  display: flex;
+  align-items: center;
+}
+
+/* Form Inputs */
+.title-input {
+  padding: 1rem 1.25rem;
+  font-size: 1.125rem;
+  font-weight: 600;
+  border: 2px solid var(--color-neutral-200);
+  border-radius: 10px;
+  width: 100%;
+  box-sizing: border-box;
+  font-family: inherit;
+  line-height: 1.4;
+  color: var(--color-neutral-900);
+  background: white;
+  transition: all 0.2s ease;
+}
+
+.title-input:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(20, 184, 166, 0.1);
+}
+
+.title-input::placeholder {
+  color: var(--color-neutral-400);
+  font-weight: 500;
+}
+
+.section-textarea {
+  padding: 0.875rem 1rem;
+  font-size: 1rem;
+  border: 2px solid var(--color-neutral-200);
+  border-radius: 10px;
+  resize: vertical;
+  width: 100%;
+  box-sizing: border-box;
+  font-family: inherit;
+  line-height: 1.5;
+  color: var(--color-neutral-800);
+  background: white;
+  transition: all 0.2s ease;
+  min-height: 80px;
+}
+
+.section-textarea:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(20, 184, 166, 0.1);
+}
+
+.section-textarea::placeholder {
+  color: var(--color-neutral-400);
+  line-height: 1.5;
+}
+
+.date-input {
+  padding: 0.75rem 1rem;
+  font-size: 0.875rem;
+  border: 1px solid var(--color-neutral-200);
+  border-radius: 8px;
+  width: 100%;
+  box-sizing: border-box;
+  font-family: inherit;
+  color: var(--color-neutral-800);
+  background: white;
+  transition: all 0.2s ease;
+}
+
+.date-input:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 2px rgba(20, 184, 166, 0.1);
+}
+
+/* Action Buttons Card */
+.create-actions-card {
+  background: linear-gradient(135deg, #f0fdfa, #f0f9ff);
+  border: 1px solid var(--color-primary);
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 
+    0 1px 3px rgba(20, 184, 166, 0.1),
+    0 1px 2px rgba(20, 184, 166, 0.05);
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+.create-task-btn {
+  width: 100%;
+  font-weight: 600;
+  padding: 0.875rem 1.25rem;
+  font-size: 0.9375rem;
+}
+
+.cancel-btn {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  font-size: 0.875rem;
+}
+
+/* Enhanced Input Focus States */
+.title-input:focus,
+.section-textarea:focus,
+.date-input:focus {
+  transform: translateY(-1px);
+  box-shadow: 
+    0 0 0 3px rgba(20, 184, 166, 0.1),
+    0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+/* Input Hover States */
+.title-input:hover:not(:focus),
+.section-textarea:hover:not(:focus),
+.date-input:hover:not(:focus) {
+  border-color: var(--color-neutral-300);
+}
+
+/* Form Validation States - Only show on submitted form */
+.form-submitted .title-input:invalid {
+  border-color: #ef4444;
+}
+
+.form-submitted .title-input:invalid:focus {
+  border-color: #ef4444;
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+}
+
+/* Form Layout - Match TaskViewModal Structure */
+form {
+  display: contents; /* Form doesn't affect layout, behaves as if children are direct children of parent */
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+  .create-task-title {
+    font-size: 1.5rem;
+  }
+
+  .title-input {
+    padding: 0.875rem 1rem;
+    font-size: 1rem;
+  }
+
+  .section-textarea {
+    padding: 0.75rem 0.875rem;
+  }
+
+  .create-actions-card {
+    margin-top: 0.5rem;
+    padding: 1.25rem;
+  }
+
+  .metadata-sidebar {
+    order: 1;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+  }
+
+  .create-actions-card {
+    grid-column: 1 / -1;
+    order: 3;
+  }
+}
+
+@media (max-width: 480px) {
+  .create-task-title {
+    font-size: 1.25rem;
+  }
+
+  .metadata-sidebar {
+    grid-template-columns: 1fr;
+  }
+
+  .create-actions-card {
+    margin-top: 1rem;
+  }
+}

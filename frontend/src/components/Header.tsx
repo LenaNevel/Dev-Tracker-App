@@ -18,12 +18,22 @@ export default function Header() {
   if (isAuthenticated) {
     actionButtons = (
       <div className="header-actions">
-        <button onClick={logout} className="btn-secondary">
-          Log Out
-        </button>
-        <button className="btn-primary" onClick={openModal}>
-          <span className="emoji">🔧</span> Spin Up a Task
-        </button>
+        <nav className="header-nav">
+          <Link href="/dashboard" className="nav-link">
+            Dashboard
+          </Link>
+          <Link href="/account" className="nav-link">
+            Account
+          </Link>
+        </nav>
+        <div className="header-buttons">
+          <button onClick={logout} className="btn-secondary">
+            Log Out
+          </button>
+          <button className="btn-primary" onClick={openModal}>
+            <span className="emoji">🔧</span> Spin Up a Task
+          </button>
+        </div>
       </div>
     );
   }

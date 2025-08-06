@@ -1,8 +1,8 @@
-# app/schemas.py
-from pydantic import BaseModel, EmailStr, Field
-from typing import Annotated
+# app/schemas/task_schemas.py
+from pydantic import BaseModel, Field, ConfigDict
 from datetime import datetime
 from enum import Enum
+
 
 class TaskStatusEnum(str, Enum):
     BACKLOG = "backlog"
@@ -10,49 +10,6 @@ class TaskStatusEnum(str, Enum):
     IN_REVIEW = "in_review" 
     DONE = "done"
     WONT_DO = "wont_do"
-
-# Define reusable annotated types
-Username = Annotated[
-    str,
-    Field(
-        min_length=3,
-        strip_whitespace=True,
-        description="Your public handle (3+ chars, no leading/trailing whitespace)"
-    )
-]
-Password = Annotated[
-    str,
-    Field(
-        min_length=6,
-        description="Password (6+ characters)"
-    )
-]
-
-class UserRegisterSchema(BaseModel):
-    username: Username
-    email: EmailStr
-    password: Password
-
-class UserLoginSchema(BaseModel):
-    email: EmailStr
-    password: Password
-
-# app/schemas.py
-from pydantic import BaseModel, EmailStr
-from pydantic import ConfigDict
-from typing import Annotated
-from datetime import datetime
-
-# … keep your Username and Password Annotated types …
-
-class UserOutSchema(BaseModel):
-    id: int
-    username: str
-    email: EmailStr
-    created_at: datetime
-
-    # Tell Pydantic to read attributes off the ORM object
-    model_config = ConfigDict(from_attributes=True)
 
 
 # Task schemas
@@ -63,6 +20,7 @@ class TaskBaseSchema(BaseModel):
     how: str | None = Field(None, description="Implementation ideas or approach")
     acceptance_criteria: str | None = Field(None, description="Success criteria or checklist")
     status: str | None = Field(None, description="Task status")
+    due_date: datetime | None = Field(None, description="Task due date")
 
 
 class TaskCreateSchema(TaskBaseSchema):
@@ -79,6 +37,7 @@ class TaskTableSchema(BaseModel):
     title: str
     status: str
     created_at: datetime
+    due_date: datetime | None
 
     model_config = ConfigDict(from_attributes=True)
     
@@ -89,7 +48,8 @@ class TaskTableSchema(BaseModel):
                 'id': obj.id,
                 'title': obj.title,
                 'status': obj.status.value,
-                'created_at': obj.created_at
+                'created_at': obj.created_at,
+                'due_date': obj.due_date
             }
             return super().model_validate(obj_dict)
         return super().model_validate(obj)
@@ -106,6 +66,7 @@ class TaskOutSchema(BaseModel):
     user_id: int
     created_at: datetime
     updated_at: datetime | None
+    due_date: datetime | None
 
     model_config = ConfigDict(from_attributes=True)
     

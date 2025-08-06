@@ -66,7 +66,7 @@ export default function ConfirmationModal({
         <div className="confirmation-modal-body">
           {taskTitle ? (
             <p className="confirmation-message">
-              Are you sure you want to delete <strong>"{taskTitle}"</strong>? This cannot be undone.
+              Are you sure you want to delete <strong>&ldquo;{taskTitle}&rdquo;</strong>? This cannot be undone.
             </p>
           ) : (
             <p className="confirmation-message">{message}</p>

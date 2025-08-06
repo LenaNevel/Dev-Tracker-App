@@ -3,8 +3,8 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { getTasks, getTask, updateTask, updateTaskStatus, reorderTask, Task, TaskStatus } from '../../api/task';
-import TaskModal from "../../components/TaskModal";
-import TaskEditModal from "../../components/TaskEditModal";
+import TaskCreateModal from "../../components/TaskCreateModal";
+import TaskViewModal from "../../components/TaskViewModal";
 import DroppableColumn from "../../components/DroppableColumn";
 import TaskDragOverlay from "../../components/TaskDragOverlay";
 import { 
@@ -114,6 +114,11 @@ export default function DashboardPage() {
       setEditModalOpen(false);
       setEditingTask(null);
     }
+  };
+
+  const handleTaskCreate = (newTask: Task) => {
+    // Add new task to UI immediately (optimistic create)
+    setTasks(prev => [newTask, ...prev]);
   };
 
   const handleDragStart = (event: DragStartEvent) => {
@@ -268,7 +273,7 @@ export default function DashboardPage() {
             <h2 className="dashboard-title">Loading your tasks...</h2>
           </div>
         </div>
-        <TaskModal />
+        <TaskCreateModal onTaskCreate={handleTaskCreate} />
       </main>
     );
   }
@@ -283,10 +288,10 @@ export default function DashboardPage() {
           {tasks.length === 0 && (
             <div className="empty-state">
               <p className="dashboard-subtitle">
-                You haven't spun up any tasks yet.
+                You haven&apos;t spun up any tasks yet.
               </p>
               <p className="dashboard-subtitle">
-                Click "🔧 Spin Up a Task" in the header to get started! 🚀
+                Click &ldquo;🔧 Spin Up a Task&rdquo; in the header to get started! 🚀
               </p>
             </div>
           )}
@@ -318,8 +323,8 @@ export default function DashboardPage() {
           </DndContext>
         )}
       </div>
-      <TaskModal />
-      <TaskEditModal 
+      <TaskCreateModal onTaskCreate={handleTaskCreate} />
+      <TaskViewModal 
         isOpen={editModalOpen}
         task={editingTask}
         onClose={handleCloseEditModal}

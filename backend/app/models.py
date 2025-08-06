@@ -80,5 +80,6 @@ class Task(TimestampMixin, CRUDMixin, db.Model):
     acceptance_criteria = db.Column(db.Text, nullable=True)
     status = db.Column(db.Enum(TaskStatus), nullable=False, default=TaskStatus.BACKLOG)
     sort_order = db.Column(db.Float, nullable=False, default=1000.0)
+    due_date = db.Column(db.DateTime(timezone=True), nullable=True)
     is_deleted = db.Column(db.Boolean, nullable=False, default=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)

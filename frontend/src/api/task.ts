@@ -14,6 +14,8 @@ export interface Task {
   user_id: number;
   created_at: string;
   updated_at?: string;
+  due_date?: string;
+  sort_order: number;
 }
 
 export interface CreateTaskData {
@@ -23,6 +25,7 @@ export interface CreateTaskData {
   how?: string;
   acceptance_criteria?: string;
   status?: TaskStatus;
+  due_date?: string;
 }
 
 export async function createTask(taskData: CreateTaskData) {
